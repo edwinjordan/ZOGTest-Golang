@@ -10,10 +10,11 @@ import (
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/repository/postgres"
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/rest"
 	"github.com/edwinjordan/ZOGTest-Golang.git/service"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
-func TestTopicCRUD_E2E(t *testing.T) {
+func TestNewsCRUD_E2E(t *testing.T) {
 	kit := NewTestKit(t)
 
 	// Wire the routes and services
@@ -21,59 +22,74 @@ func TestTopicCRUD_E2E(t *testing.T) {
 	//userSvc := service.NewUserService(userRepo)
 	//rest.NewUserHandler(kit.Echo.Group("/api/v1"), userSvc)
 
-	// Register Topic routes and services
-	topicRepo := postgres.NewTopicRepository(kit.DB)
-	topicSvc := service.NewTopicService(topicRepo)
-	rest.NewTopicHandler(kit.Echo.Group("/api/v1"), topicSvc)
+	// Register User routes and services
+	newsRepo := postgres.NewNewsRepository(kit.DB)
+	newsSvc := service.NewNewsService(newsRepo)
+	rest.NewNewsHandler(kit.Echo.Group("/api/v1"), newsSvc)
 
 	// Now start the test server
 	kit.Start(t)
 
 	// Create
-	createReq := domain.CreateTopicRequest{
-		Name: "John Doe",
+	createReq := domain.CreateNewsRequest{
+		Title:   "Test News",
+		Status:  "draft",
+		Content: "This is a test news content.",
+		Topic: []domain.NewsTopic{
+			{
+				TopicId: uuid.New().String(),
+				NewsId:  uuid.New().String(),
+			},
+		},
 		//Slug: "john-doe",
 		//Password: "Password1234",
 	}
-	type CreateType domain.ResponseSingleData[domain.Topic]
+	type CreateType domain.ResponseSingleData[domain.News]
 	cre, code := doRequest[CreateType](
 		t, http.MethodPost,
-		kit.BaseURL+"/api/v1/topics",
+		kit.BaseURL+"/api/v1/news",
 		createReq,
 	)
 	require.Equal(t, http.StatusCreated, code)
 	require.Equal(t, "success", cre.Status)
-	topic := cre.Data
-	require.NotEmpty(t, topic.ID)
+	news := cre.Data
+	require.NotEmpty(t, news.ID)
 
 	// Get
-	type GetType domain.ResponseSingleData[domain.Topic]
+	type GetType domain.ResponseSingleData[domain.News]
 	getE, code := doRequest[GetType](
 		t, http.MethodGet,
-		fmt.Sprintf("%s/api/v1/topics/%s", kit.BaseURL, topic.ID),
+		fmt.Sprintf("%s/api/v1/news/%s", kit.BaseURL, news.ID),
 		nil,
 	)
 	require.Equal(t, http.StatusOK, code)
-	require.Equal(t, topic.ID, getE.Data.ID)
+	require.Equal(t, news.ID, getE.Data.ID)
 
 	// Update
-	updPayload := domain.Topic{
-		Name: "Jane Doe",
-		Slug: "jane-doe",
+	updPayload := domain.UpdateNewsRequest{
+		Title:   "Updated Test News",
+		Status:  "published",
+		Content: "This is the updated content.",
+		Topic: []domain.NewsTopic{
+			{
+				TopicId: uuid.New().String(),
+				NewsId:  news.ID,
+			},
+		},
 	}
-	type UpdType domain.ResponseSingleData[domain.Topic]
+	type UpdType domain.ResponseSingleData[domain.News]
 	updE, code := doRequest[UpdType](
 		t, http.MethodPut,
-		fmt.Sprintf("%s/api/v1/topics/%s", kit.BaseURL, topic.ID),
+		fmt.Sprintf("%s/api/v1/news/%s", kit.BaseURL, news.ID),
 		updPayload,
 	)
 	require.Equal(t, http.StatusOK, code)
-	require.Equal(t, "Jane Doe", updE.Data.Name)
+	require.Equal(t, "Updated Test News", updE.Data.Title)
 
 	// Delete
 	req, err := http.NewRequest(
 		http.MethodDelete,
-		fmt.Sprintf("%s/api/v1/topics/%s", kit.BaseURL, topic.ID),
+		fmt.Sprintf("%s/api/v1/news/%s", kit.BaseURL, news.ID),
 		nil,
 	)
 	require.NoError(t, err)
@@ -86,14 +102,14 @@ func TestTopicCRUD_E2E(t *testing.T) {
 	type ErrType domain.ResponseSingleData[domain.Empty]
 	errE, code := doRequest[ErrType](
 		t, http.MethodGet,
-		fmt.Sprintf("%s/api/v1/topics/%s", kit.BaseURL, topic.ID),
+		fmt.Sprintf("%s/api/v1/news/%s", kit.BaseURL, news.ID),
 		nil,
 	)
 	require.Equal(t, http.StatusNotFound, code)
 	require.Equal(t, "error", errE.Status)
-	require.Equal(t, "Topic not found", errE.Message)
+	require.Equal(t, "News not found", errE.Message)
 
 	// Hard delete, since delete API uses soft delete
-	_, err = kit.DB.Exec(context.Background(), "DELETE from topik where id = $1", topic.ID)
+	_, err = kit.DB.Exec(context.Background(), "DELETE from news where id = $1", news.ID)
 	require.NoError(t, err)
 }

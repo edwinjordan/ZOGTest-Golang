@@ -72,12 +72,16 @@ func main() {
 	topicRepo := postgres.NewTopicRepository(dbPool)
 	topicService := service.NewTopicService(topicRepo)
 
+	newsRepo := postgres.NewNewsRepository(dbPool)
+	newsService := service.NewNewsService(newsRepo)
 	apiV1 := e.Group("/api/v1")
 	usersGroup := apiV1.Group("")
 	topicGroup := apiV1.Group("")
+	newsGroup := apiV1.Group("")
 
 	rest.NewUserHandler(usersGroup, userService)
 	rest.NewTopicHandler(topicGroup, topicService)
+	rest.NewNewsHandler(newsGroup, newsService)
 
 	// Get host from environment variable, default to 127.0.0.1 if not set
 	host := os.Getenv("APP_HOST")

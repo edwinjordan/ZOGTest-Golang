@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/edwinjordan/ZOGTest-Golang.git/domain"
+	"github.com/edwinjordan/ZOGTest-Golang.git/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -21,8 +22,8 @@ func NewTopicRepository(conn *pgxpool.Pool) *TopicRepository {
 
 func (u *TopicRepository) CreateTopic(ctx context.Context, topic *domain.CreateTopicRequest) (*domain.Topic, error) {
 	query := `
-		INSERT INTO topic (name, slug, password, created_at, updated_at)
-		VALUES ($1, $2, $3, NOW(), NOW())
+		INSERT INTO topik (name, slug, created_at, updated_at)
+		VALUES ($1, $2, NOW(), NOW())
 		RETURNING id`
 
 	// hashedPassword, err := utils.HashPassword(Topic.Password)
@@ -31,7 +32,7 @@ func (u *TopicRepository) CreateTopic(ctx context.Context, topic *domain.CreateT
 	// }
 
 	var id uuid.UUID
-	err := u.Conn.QueryRow(ctx, query, topic.Name, topic.Slug).Scan(&id)
+	err := u.Conn.QueryRow(ctx, query, topic.Name, utils.Slugify(topic.Name)).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +40,7 @@ func (u *TopicRepository) CreateTopic(ctx context.Context, topic *domain.CreateT
 	return &domain.Topic{
 		ID:   id.String(),
 		Name: topic.Name,
-		Slug: topic.Slug,
+		Slug: utils.Slugify(topic.Name),
 	}, nil
 }
 
@@ -51,7 +52,7 @@ func (u *TopicRepository) GetTopicList(ctx context.Context, filter *domain.Topic
 			u.slug,
             u.created_at,
             u.updated_at
-		FROM topic u
+		FROM topik u
         WHERE u.deleted_at is NULL`
 
 	var args []interface{}
@@ -102,7 +103,7 @@ func (u *TopicRepository) GetTopic(ctx context.Context, id uuid.UUID) (*domain.T
 			slug,
 			created_at,
 			updated_at
-		FROM topic
+		FROM topik
 		WHERE id = $1 AND deleted_at IS NULL`
 
 	// span.SetAttributes(attribute.String("query.statement", query))
@@ -129,7 +130,7 @@ func (u *TopicRepository) GetTopic(ctx context.Context, id uuid.UUID) (*domain.T
 
 func (u *TopicRepository) UpdateTopic(ctx context.Context, id uuid.UUID, topic *domain.Topic) (*domain.Topic, error) {
 	query := `
-		UPDATE topic
+		UPDATE topik
 		SET name = $1,
 			slug = $2,
 			updated_at = NOW()
@@ -156,7 +157,7 @@ func (u *TopicRepository) UpdateTopic(ctx context.Context, id uuid.UUID, topic *
 
 func (u *TopicRepository) DeleteTopic(ctx context.Context, id uuid.UUID) error {
 	query := `
-		UPDATE topic
+		UPDATE topik
 		SET deleted_at = NOW()
 		WHERE id = $1 AND deleted_at IS NULL`
 

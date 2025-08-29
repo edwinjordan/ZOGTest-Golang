@@ -14,13 +14,13 @@ type Topic struct {
 
 type CreateTopicRequest struct {
 	Name string `json:"name" validate:"required"`
-	Slug string `json:"slug" validate:"required,slug"`
+	Slug string `json:"slug"`
 	//Password string `json:"password" validate:"required,password"`
 }
 
 type UpdateTopicRequest struct {
 	Name string `json:"name" validate:"required"`
-	Slug string `json:"slug" validate:"required,slug"`
+	Slug string `json:"slug"`
 }
 
 type TopicFilter struct {

@@ -133,7 +133,7 @@ func TestTopicService_UpdateTopic(t *testing.T) {
 	}
 
 	t.Run("Successfully updates a topic", func(t *testing.T) {
-		mockTopicRepo.On("GetUser", mock.Anything, topicID).Return(existingTopic, nil).Once()
+		mockTopicRepo.On("GetTopic", mock.Anything, topicID).Return(existingTopic, nil).Once()
 
 		expectedUpdatedTopic := &domain.Topic{
 			ID:   topicID.String(),
@@ -186,7 +186,7 @@ func TestTopicService_UpdateTopic(t *testing.T) {
 		mockTopicRepo = new(mocks.TopicRepository)
 		topicService = service.NewTopicService(mockTopicRepo)
 
-		mockTopicRepo.On("GetUser", mock.Anything, topicID).Return(existingTopic, nil).Once()
+		mockTopicRepo.On("GetTopic", mock.Anything, topicID).Return(existingTopic, nil).Once()
 
 		repoErr := errors.New("update topic repo error")
 		expectedUpdatedTopic := &domain.Topic{
@@ -206,7 +206,7 @@ func TestTopicService_UpdateTopic(t *testing.T) {
 	})
 }
 
-func TestTopicService_DeleteUser(t *testing.T) {
+func TestTopicService_DeleteTopic(t *testing.T) {
 	mockTopicRepo := new(mocks.TopicRepository)
 	topicService := service.NewTopicService(mockTopicRepo)
 
