@@ -1,0 +1,245 @@
+{
+	"info": {
+		"_postman_id": "42b33787-1dbb-41f7-8ec1-fb7d49ce518b",
+		"name": "ZOG Skill Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9217500"
+	},
+	"item": [
+		{
+			"name": "Topic",
+			"item": [
+				{
+					"name": "Get Topic",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1:8000/api/v1/topics",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"topics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post Topic",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\" : \"Teknologi Informasi\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:8000/api/v1/topics",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"topics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put Topic",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\" : \"Teknologi Informatikas\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:8000/api/v1/topics/719f8b13-ca0b-4098-a9bf-6b7b7191becf",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"719f8b13-ca0b-4098-a9bf-6b7b7191becf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE Topik",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1:8000/api/v1/topics/719f8b13-ca0b-4098-a9bf-6b7b7191becf",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"719f8b13-ca0b-4098-a9bf-6b7b7191becf"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "News",
+			"item": [
+				{
+					"name": "Get News",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1:8000/api/v1/news/",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"news",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post News",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\" : \"Berita Informasi Bola\",\r\n    \"content\" : \"isi contoh berita\",\r\n    \"status\" : \"draft\",\r\n    \"topics\" :  [\r\n                {\r\n                    \"topic_id\" : \"5826280c-41f3-4d2b-a09d-adc85f07d8ac\"\r\n                }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:8000/api/v1/news",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"news"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT News",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\" : \"Berita Informasi\",\r\n    \"content\" : \"isi contoh berita\",\r\n    \"status\" : \"draft\",\r\n    \"topics\" :  [\r\n                {\r\n                    \"topic_id\" : \"5826280c-41f3-4d2b-a09d-adc85f07d8ac\"\r\n                },\r\n                 {\r\n                    \"topic_id\" : \"ea870d16-8f90-42e7-81cb-cae227b95b4a\"\r\n                }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:8000/api/v1/news/a9c34485-da1b-43af-8527-bacafb42d2fa",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"news",
+								"a9c34485-da1b-43af-8527-bacafb42d2fa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1:8000/api/v1/news/a9c34485-da1b-43af-8527-bacafb42d2fa",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"news",
+								"a9c34485-da1b-43af-8527-bacafb42d2fa"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

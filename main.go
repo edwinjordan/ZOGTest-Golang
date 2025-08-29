@@ -1,3 +1,8 @@
+// @title ZOGTest API
+// @version 1.0
+// @description This is ZOGTest API server.
+// @host localhost:8000
+// @BasePath /api/v1
 package main
 
 import (
@@ -20,7 +25,11 @@ import (
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/rest/middleware"
 	"github.com/edwinjordan/ZOGTest-Golang.git/service"
 	"github.com/labstack/echo/v4"
+
 	//"go.opentelemetry.io/otel/metric"
+	echoSwagger "github.com/swaggo/echo-swagger"
+
+	_ "github.com/swaggo/echo-swagger/example/docs"
 )
 
 func init() {
@@ -65,7 +74,9 @@ func main() {
 			Message: "All is well!",
 		})
 	})
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
+	//e.Logger.Fatal(e.Start(":8080"))
 	userRepo := postgres.NewUserRepository(dbPool)
 	userService := service.NewUserService(userRepo)
 

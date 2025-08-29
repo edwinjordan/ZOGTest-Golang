@@ -10,7 +10,8 @@ type News struct {
 	Content   string          `json:"content"`
 	CreatedAt time.Time       `json:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at"`
-	Topics    []NewsTopicList `json:"topics"`
+	Topics    []NewsTopic     `json:"topics"`
+	TopicList []NewsTopicList `json:"topics_list"`
 }
 
 type NewsUpdate struct {
@@ -25,7 +26,6 @@ type NewsUpdate struct {
 }
 
 type NewsTopicList struct {
-	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	Slug      string    `json:"slug"`
 	CreatedAt time.Time `json:"created_at"`

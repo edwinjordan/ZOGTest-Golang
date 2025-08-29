@@ -82,10 +82,10 @@ func TestNewsService_GetNews(t *testing.T) {
 		Slug:    "fetched-title",
 		Status:  "published",
 		Content: "This is fetched news content.",
-		Topics: []domain.NewsTopicList{
+		Topics: []domain.NewsTopic{
 			{
-				ID:   uuid.New().String(),
-				Name: "Tech",
+				TopicId: uuid.New().String(),
+				//Name: "Tech",
 			},
 		},
 	}

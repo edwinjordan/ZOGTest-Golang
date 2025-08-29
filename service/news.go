@@ -66,6 +66,7 @@ func (us *NewsService) UpdateNews(
 	existing.Slug = u.Slug
 	existing.Status = u.Status
 	existing.Content = u.Content
+	existing.Topics = u.Topics
 
 	_, err = us.newsRepo.UpdateNews(ctx, id, existing)
 	if err != nil {

@@ -33,8 +33,9 @@ func (u *NewsRepository) CreateNews(ctx context.Context, news *domain.CreateNews
 	if err != nil {
 		return nil, err
 	}
-
+	//panic(news.Topic)
 	for _, detail := range news.Topic {
+
 		topicID, err := uuid.Parse(detail.TopicId)
 		if err != nil {
 			return nil, errors.New("invalid topic ID: " + detail.TopicId)
@@ -83,7 +84,7 @@ func (u *NewsRepository) GetNewsList(ctx context.Context, filter *domain.NewsFil
                 FROM news_topic nt
                 LEFT JOIN topik t ON t.id = nt.topic_id
 				WHERE nt.news_id = n.id AND t.deleted_at IS NULL
-			) as topics
+			) as topics_list
 		FROM news n
 		WHERE n.deleted_at is NULL`
 
@@ -116,7 +117,7 @@ func (u *NewsRepository) GetNewsList(ctx context.Context, filter *domain.NewsFil
 			&news.Content,
 			&news.CreatedAt,
 			&news.UpdatedAt,
-			&news.Topics,
+			&news.TopicList,
 		)
 		if err != nil {
 			return nil, err
@@ -216,9 +217,10 @@ func (u *NewsRepository) UpdateNews(ctx context.Context, id uuid.UUID, news *dom
 	}
 
 	for _, detail := range news.Topics {
-		topicID, err := uuid.Parse(detail.ID)
+
+		topicID, err := uuid.Parse(detail.TopicId)
 		if err != nil {
-			return nil, errors.New("invalid News ID: " + detail.ID)
+			return nil, errors.New("invalid News ID: " + detail.TopicId)
 		}
 
 		topicQuery := `
