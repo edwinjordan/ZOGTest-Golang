@@ -189,7 +189,7 @@ func (u *NewsRepository) UpdateNews(ctx context.Context, id uuid.UUID, news *dom
 		RETURNING id, title, slug, status, content, updated_at`
 
 	var updatedNews domain.News
-	err := u.Conn.QueryRow(ctx, query, news.Title, utils.Slugify(news.Slug), news.Status, news.Content, id).Scan(
+	err := u.Conn.QueryRow(ctx, query, news.Title, utils.Slugify(news.Title), news.Status, news.Content, id).Scan(
 		&updatedNews.ID,
 		&updatedNews.Title,
 		&updatedNews.Slug,
@@ -218,7 +218,7 @@ func (u *NewsRepository) UpdateNews(ctx context.Context, id uuid.UUID, news *dom
 	for _, detail := range news.Topics {
 		topicID, err := uuid.Parse(detail.ID)
 		if err != nil {
-			return nil, errors.New("invalid topic ID: " + detail.ID)
+			return nil, errors.New("invalid News ID: " + detail.ID)
 		}
 
 		topicQuery := `
