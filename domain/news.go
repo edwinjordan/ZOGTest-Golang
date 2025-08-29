@@ -53,12 +53,15 @@ type CreateNewsTopicRequest struct {
 	NewsId  string `json:"news_id" validate:"required"`
 	//Password string `json:"password" validate:"required,password"`
 }
+type NewsTopicNew struct {
+	TopicId string `json:"topic_id"`
+}
 type UpdateNewsRequest struct {
-	Title   string      `json:"title" validate:"required"`
-	Slug    string      `json:"slug"`
-	Status  string      `json:"status" validate:"required"`
-	Content string      `json:"content" validate:"required"`
-	Topic   []NewsTopic `json:"topics"`
+	Title   string         `json:"title" validate:"required"`
+	Slug    string         `json:"slug"`
+	Status  string         `json:"status" validate:"required"`
+	Content string         `json:"content" validate:"required"`
+	Topic   []NewsTopicNew `json:"topics"`
 }
 
 type NewsFilter struct {

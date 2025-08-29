@@ -138,7 +138,7 @@ func (u *TopicRepository) UpdateTopic(ctx context.Context, id uuid.UUID, topic *
 		RETURNING id, name, slug, created_at, updated_at`
 
 	var updatedTopic domain.Topic
-	err := u.Conn.QueryRow(ctx, query, topic.Name, topic.Slug, id).Scan(
+	err := u.Conn.QueryRow(ctx, query, topic.Name, utils.Slugify(topic.Name), id).Scan(
 		&updatedTopic.ID,
 		&updatedTopic.Name,
 		&updatedTopic.Slug,
