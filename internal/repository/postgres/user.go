@@ -7,18 +7,23 @@ import (
 	"strings"
 
 	"github.com/edwinjordan/ZOGTest-Golang.git/domain"
+	"github.com/edwinjordan/ZOGTest-Golang.git/internal/metrics"
 	"github.com/edwinjordan/ZOGTest-Golang.git/utils"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type UserRepository struct {
-	Conn *pgxpool.Pool
+	Conn    *pgxpool.Pool
+	Metrics *metrics.Metrics
 }
 
-func NewUserRepository(conn *pgxpool.Pool) *UserRepository {
-	return &UserRepository{Conn: conn}
+func NewUserRepository(conn *pgxpool.Pool, metrics *metrics.Metrics) *UserRepository {
+	return &UserRepository{Conn: conn, Metrics: metrics}
 }
 
 func (u *UserRepository) CreateUser(ctx context.Context, user *domain.CreateUserRequest) (*domain.User, error) {
@@ -93,9 +98,9 @@ func (u *UserRepository) GetUserList(ctx context.Context, filter *domain.UserFil
 }
 
 func (u *UserRepository) GetUser(ctx context.Context, id uuid.UUID) (*domain.User, error) {
-	// tracer := otel.Tracer("repo.user")
-	// ctx, span := tracer.Start(ctx, "UserRepository.GetUser")
-	// defer span.End()
+	tracer := otel.Tracer("repo.user")
+	ctx, span := tracer.Start(ctx, "UserRepository.GetUser")
+	defer span.End()
 
 	query := `
 		SELECT
@@ -107,8 +112,8 @@ func (u *UserRepository) GetUser(ctx context.Context, id uuid.UUID) (*domain.Use
 		FROM users
 		WHERE id = $1 AND deleted_at IS NULL`
 
-	// span.SetAttributes(attribute.String("query.statement", query))
-	// span.SetAttributes(attribute.String("query.parameter", id.String()))
+	span.SetAttributes(attribute.String("query.statement", query))
+	span.SetAttributes(attribute.String("query.parameter", id.String()))
 	row := u.Conn.QueryRow(ctx, query, id)
 
 	var user domain.User
@@ -120,12 +125,12 @@ func (u *UserRepository) GetUser(ctx context.Context, id uuid.UUID) (*domain.Use
 		&user.UpdatedAt,
 	)
 	if err != nil {
-		//span.RecordError(err)
-		//		u.Metrics.UserRepoCalls.WithLabelValues("GetUser", "error").Inc()
+		span.RecordError(err)
+		u.Metrics.UserRepoCalls.WithLabelValues("GetUser", "error").Inc()
 		return nil, err
 	}
 
-	//	u.Metrics.UserRepoCalls.WithLabelValues("GetUser", "success").Inc()
+	u.Metrics.UserRepoCalls.WithLabelValues("GetUser", "success").Inc()
 	return &user, nil
 }
 

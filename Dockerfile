@@ -3,7 +3,7 @@
 # Arguments with default value (for build).
 ARG PLATFORM=linux/amd64
 ARG NODE_VERSION=22
-ARG GO_VERSION=1.24
+ARG GO_VERSION=1.25
 
 FROM busybox:1.37-glibc as glibc
 

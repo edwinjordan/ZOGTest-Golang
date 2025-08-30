@@ -11,6 +11,10 @@ import (
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/logging"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 )
 
 type UserService interface {
@@ -67,15 +71,15 @@ func (h *UserHandler) GetUserList(c echo.Context) error {
 
 func (h *UserHandler) GetUser(c echo.Context) error {
 	ctx := c.Request().Context()
-	// tracer := otel.Tracer("http.handler.user")
-	// ctx, span := tracer.Start(c.Request().Context(), "GetUserHandler")
-	// defer span.End()
+	tracer := otel.Tracer("http.handler.user")
+	ctx, span := tracer.Start(c.Request().Context(), "GetUserHandler")
+	defer span.End()
 
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		//	span.RecordError(err)
-		//	span.SetStatus(codes.Error, "invalid UUID")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "invalid UUID")
 		return c.JSON(http.StatusBadRequest, domain.ResponseSingleData[domain.Empty]{
 			Code:    http.StatusBadRequest,
 			Status:  "error",
@@ -83,12 +87,12 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 		})
 	}
 
-	//span.SetAttributes(attribute.String("user.id", id.String()))
+	span.SetAttributes(attribute.String("user.id", id.String()))
 	user, err := h.Service.GetUser(ctx, id)
 	if err != nil {
-		//	span.RecordError(err)
+		span.RecordError(err)
 		if errors.Is(err, sql.ErrNoRows) {
-			//span.SetStatus(codes.Error, "not found")
+			span.SetStatus(codes.Error, "not found")
 			return c.JSON(http.StatusNotFound, domain.ResponseSingleData[domain.Empty]{
 				Code:    http.StatusNotFound,
 				Status:  "error",
@@ -96,7 +100,7 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 			})
 		}
 
-		//span.SetStatus(codes.Error, "service error")
+		span.SetStatus(codes.Error, "service error")
 		logging.LogError(ctx, err, "get_user")
 		return c.JSON(http.StatusInternalServerError, domain.ResponseSingleData[domain.Empty]{
 			Code:    http.StatusInternalServerError,

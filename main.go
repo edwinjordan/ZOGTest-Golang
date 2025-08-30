@@ -34,13 +34,13 @@ import (
 	"github.com/edwinjordan/ZOGTest-Golang.git/database"
 	"github.com/edwinjordan/ZOGTest-Golang.git/domain"
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/logging"
+	"github.com/edwinjordan/ZOGTest-Golang.git/internal/metrics"
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/repository/postgres"
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/rest"
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/rest/middleware"
 	"github.com/edwinjordan/ZOGTest-Golang.git/service"
 	"github.com/labstack/echo/v4"
 
-	//"go.opentelemetry.io/otel/metric"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	_ "github.com/edwinjordan/ZOGTest-Golang.git/docs"
@@ -77,9 +77,9 @@ func main() {
 
 	defer stop()
 
-	// appMetrics := metrics.NewMetrics()
-	// shutdown, err := config.ApplyInstrumentation(ctx, e, appMetrics)
-	// defer shutdown(ctx)
+	appMetrics := metrics.NewMetrics()
+	shutdown, err := config.ApplyInstrumentation(ctx, e, appMetrics)
+	defer shutdown(ctx)
 	e.Use(middleware.RequestIDMiddleware())
 	e.Use(middleware.SlogLoggerMiddleware())
 	e.Use(middleware.Cors())
@@ -98,7 +98,7 @@ func main() {
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	//e.Logger.Fatal(e.Start(":8080"))
-	userRepo := postgres.NewUserRepository(dbPool)
+	userRepo := postgres.NewUserRepository(dbPool, appMetrics)
 	userService := service.NewUserService(userRepo)
 
 	topicRepo := postgres.NewTopicRepository(dbPool)
