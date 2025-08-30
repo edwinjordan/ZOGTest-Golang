@@ -50,6 +50,12 @@ func init() {
 	config.LoadEnv()
 }
 
+// func adaptHandler(h http.Handler) httprouter.Handle {
+// 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+// 		h.ServeHTTP(w, r)
+// 	}
+// }
+
 func main() {
 	config.SetupLogging()
 
@@ -68,6 +74,7 @@ func main() {
 	e.Logger.SetLevel(0)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+
 	defer stop()
 
 	// appMetrics := metrics.NewMetrics()
@@ -88,7 +95,8 @@ func main() {
 			Message: "All is well!",
 		})
 	})
-	e.GET("/swagger/*any", echoSwagger.WrapHandler)
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
 	//e.Logger.Fatal(e.Start(":8080"))
 	userRepo := postgres.NewUserRepository(dbPool)
 	userService := service.NewUserService(userRepo)

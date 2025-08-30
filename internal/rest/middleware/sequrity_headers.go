@@ -1,23 +1,33 @@
 package middleware
 
 import (
+	"strings"
+
 	"github.com/labstack/echo/v4"
 )
 
 func SecurityHeadersMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// X-Content-Type-Options - prevents MIME type sniffing
+			path := c.Request().URL.Path
+
+			// Longgarkan aturan kalau akses Swagger
+			if strings.HasPrefix(path, "/swagger/") {
+				c.Response().Header().Set("Content-Security-Policy",
+					"default-src 'self'; "+
+						"script-src 'self' 'unsafe-inline' 'unsafe-eval'; "+
+						"style-src 'self' 'unsafe-inline'; "+ // 🔥 ini fix inline style
+						"img-src 'self' data:; "+
+						"font-src 'self' data:;")
+			} else {
+				// Ketat untuk API biasa
+				c.Response().Header().Set("Content-Security-Policy", "default-src 'self'")
+			}
+
+			// Header keamanan tambahan
 			c.Response().Header().Set("X-Content-Type-Options", "nosniff")
-
-			// X-Frame-Options - prevents clickjacking
 			c.Response().Header().Set("X-Frame-Options", "DENY")
-
-			// Strict-Transport-Security (HSTS) - forces HTTPS
-			c.Response().Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-
-			// Content-Security-Policy - restrictive for API
-			c.Response().Header().Set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
+			c.Response().Header().Set("X-XSS-Protection", "1; mode=block")
 
 			return next(c)
 		}

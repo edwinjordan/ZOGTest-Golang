@@ -36,6 +36,15 @@ func NewTopicHandler(e *echo.Group, svc TopicService) {
 	topicGroup.DELETE("/:id", handler.DeleteTopic)
 }
 
+// GetTopik godoc
+// @Summary List topik
+// @Description Get all topik
+// @Tags topik
+// @Produce  json
+// @Success 200 {array} domain.Topic
+// @Failure 500 {object} domain.ResponseSingleData[domain.Empty]
+// @Security ApiKeyAuth
+// @Router /topics [get]
 func (h *TopicHandler) GetTopicList(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -65,6 +74,16 @@ func (h *TopicHandler) GetTopicList(c echo.Context) error {
 	})
 }
 
+// GetTopic godoc
+// @Summary List topik
+// @Description get string by ID
+// @Tags topik
+// @Produce  json
+// @Param        id   path      int  true  "Account ID"
+// @Success 200 {array} domain.Topic
+// @Failure 500 {object} domain.ResponseSingleData[domain.Empty]
+// @Security ApiKeyAuth
+// @Router /topics/{id} [get]
 func (h *TopicHandler) GetTopic(c echo.Context) error {
 	ctx := c.Request().Context()
 	// tracer := otel.Tracer("http.handler.Topic")
@@ -113,6 +132,17 @@ func (h *TopicHandler) GetTopic(c echo.Context) error {
 	})
 }
 
+// CreateTopic godoc
+// @Summary Create topik
+// @Description create a new topik entry
+// @Tags topik
+// @Accept  json
+// @Produce  json
+// @Param   topics  body  domain.CreateTopicRequest  true  "Topic data"
+// @Success 201 {object} domain.CreateTopicRequest
+// @Failure 400 {object} domain.ResponseSingleData[domain.Empty]
+// @Failure 500 {object} domain.ResponseSingleData[domain.Empty]
+// @Router /topics [post]
 func (h *TopicHandler) CreateTopic(c echo.Context) error {
 	var topic domain.CreateTopicRequest
 	if err := c.Bind(&topic); err != nil {
@@ -142,6 +172,20 @@ func (h *TopicHandler) CreateTopic(c echo.Context) error {
 	})
 }
 
+// UpdateTopik godoc
+// @Summary Update topik
+// @Description update an existing topik entry by ID
+// @Tags topik
+// @Accept  json
+// @Produce  json
+// @Param   id    path  string             true  "Topic ID"
+// @Param   topics  body  domain.UpdateTopicRequest  true  "Updated topic data"
+// @Success 200 {object} domain.Topic
+// @Failure 400 {object} domain.ResponseSingleData[domain.Empty]
+// @Failure 404 {object} domain.ResponseSingleData[domain.Empty]
+// @Failure 500 {object} domain.ResponseSingleData[domain.Empty]
+// @Security ApiKeyAuth
+// @Router /topics/{id} [put]
 func (h *TopicHandler) UpdateTopic(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
@@ -181,6 +225,17 @@ func (h *TopicHandler) UpdateTopic(c echo.Context) error {
 	})
 }
 
+// DeleteTopik godoc
+// @Summary Delete topik
+// @Description delete an existing topik entry by ID
+// @Tags topik
+// @Produce  json
+// @Param   id   path  string  true  "Topic ID"
+// @Success 204 {object} nil
+// @Failure 404 {object} domain.ResponseSingleData[domain.Empty]
+// @Failure 500 {object} domain.ResponseSingleData[domain.Empty]
+// @Security ApiKeyAuth
+// @Router /topics/{id} [delete]
 func (h *TopicHandler) DeleteTopic(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)

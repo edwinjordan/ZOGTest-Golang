@@ -74,6 +74,16 @@ func (h *NewsHandler) GetNewsList(c echo.Context) error {
 	})
 }
 
+// GetNews godoc
+// @Summary List news
+// @Description get string by ID
+// @Tags news
+// @Produce  json
+// @Param        id   path      int  true  "Account ID"
+// @Success 200 {array} domain.News
+// @Failure 500 {object} domain.ResponseSingleData[domain.Empty]
+// @Security ApiKeyAuth
+// @Router /news/{id} [get]
 func (h *NewsHandler) GetNews(c echo.Context) error {
 	ctx := c.Request().Context()
 	idParam := c.Param("id")
@@ -114,6 +124,17 @@ func (h *NewsHandler) GetNews(c echo.Context) error {
 	})
 }
 
+// CreateNews godoc
+// @Summary Create news
+// @Description create a new news entry
+// @Tags news
+// @Accept  json
+// @Produce  json
+// @Param   news  body  domain.CreateNewsRequest  true  "News data"
+// @Success 201 {object} domain.CreateNewsRequest
+// @Failure 400 {object} domain.ResponseSingleData[domain.Empty]
+// @Failure 500 {object} domain.ResponseSingleData[domain.Empty]
+// @Router /news [post]
 func (h *NewsHandler) CreateNews(c echo.Context) error {
 	var news domain.CreateNewsRequest
 	if err := c.Bind(&news); err != nil {
@@ -143,6 +164,20 @@ func (h *NewsHandler) CreateNews(c echo.Context) error {
 	})
 }
 
+// UpdateNews godoc
+// @Summary Update news
+// @Description update an existing news entry by ID
+// @Tags news
+// @Accept  json
+// @Produce  json
+// @Param   id    path  string             true  "News ID"
+// @Param   news  body  domain.UpdateNewsRequest  true  "Updated news data"
+// @Success 200 {object} domain.News
+// @Failure 400 {object} domain.ResponseSingleData[domain.Empty]
+// @Failure 404 {object} domain.ResponseSingleData[domain.Empty]
+// @Failure 500 {object} domain.ResponseSingleData[domain.Empty]
+// @Security ApiKeyAuth
+// @Router /news/{id} [put]
 func (h *NewsHandler) UpdateNews(c echo.Context) error {
 	ctx := c.Request().Context()
 	idParam := c.Param("id")
@@ -190,6 +225,17 @@ func (h *NewsHandler) UpdateNews(c echo.Context) error {
 	})
 }
 
+// DeleteNews godoc
+// @Summary Delete news
+// @Description delete an existing news entry by ID
+// @Tags news
+// @Produce  json
+// @Param   id   path  string  true  "News ID"
+// @Success 204 {object} nil
+// @Failure 404 {object} domain.ResponseSingleData[domain.Empty]
+// @Failure 500 {object} domain.ResponseSingleData[domain.Empty]
+// @Security ApiKeyAuth
+// @Router /news/{id} [delete]
 func (h *NewsHandler) DeleteNews(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)

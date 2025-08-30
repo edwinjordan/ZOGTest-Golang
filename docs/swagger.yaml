@@ -1,5 +1,33 @@
 basePath: /api/v1
 definitions:
+  domain.CreateNewsRequest:
+    properties:
+      content:
+        type: string
+      slug:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      topics:
+        items:
+          $ref: '#/definitions/domain.NewsTopic'
+        type: array
+    required:
+    - content
+    - status
+    - title
+    type: object
+  domain.CreateTopicRequest:
+    properties:
+      name:
+        type: string
+      slug:
+        type: string
+    required:
+    - name
+    type: object
   domain.Empty:
     type: object
   domain.News:
@@ -51,6 +79,11 @@ definitions:
       updated_at:
         type: string
     type: object
+  domain.NewsTopicNew:
+    properties:
+      topic_id:
+        type: string
+    type: object
   domain.ResponseSingleData-domain_Empty:
     properties:
       code:
@@ -66,6 +99,47 @@ definitions:
       status:
         description: string
         type: string
+    type: object
+  domain.Topic:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  domain.UpdateNewsRequest:
+    properties:
+      content:
+        type: string
+      slug:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      topics:
+        items:
+          $ref: '#/definitions/domain.NewsTopicNew'
+        type: array
+    required:
+    - content
+    - status
+    - title
+    type: object
+  domain.UpdateTopicRequest:
+    properties:
+      name:
+        type: string
+      slug:
+        type: string
+    required:
+    - name
     type: object
 externalDocs:
   description: OpenAPI
@@ -105,6 +179,271 @@ paths:
       summary: List news
       tags:
       - news
+    post:
+      consumes:
+      - application/json
+      description: create a new news entry
+      parameters:
+      - description: News data
+        in: body
+        name: news
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateNewsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.CreateNewsRequest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+      summary: Create news
+      tags:
+      - news
+  /news/{id}:
+    delete:
+      description: delete an existing news entry by ID
+      parameters:
+      - description: News ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete news
+      tags:
+      - news
+    get:
+      description: get string by ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.News'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+      security:
+      - ApiKeyAuth: []
+      summary: List news
+      tags:
+      - news
+    put:
+      consumes:
+      - application/json
+      description: update an existing news entry by ID
+      parameters:
+      - description: News ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated news data
+        in: body
+        name: news
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateNewsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.News'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+      security:
+      - ApiKeyAuth: []
+      summary: Update news
+      tags:
+      - news
+  /topics:
+    get:
+      description: Get all topik
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Topic'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+      security:
+      - ApiKeyAuth: []
+      summary: List topik
+      tags:
+      - topik
+    post:
+      consumes:
+      - application/json
+      description: create a new topik entry
+      parameters:
+      - description: Topic data
+        in: body
+        name: topics
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateTopicRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.CreateTopicRequest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+      summary: Create topik
+      tags:
+      - topik
+  /topics/{id}:
+    delete:
+      description: delete an existing topik entry by ID
+      parameters:
+      - description: Topic ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete topik
+      tags:
+      - topik
+    get:
+      description: get string by ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Topic'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+      security:
+      - ApiKeyAuth: []
+      summary: List topik
+      tags:
+      - topik
+    put:
+      consumes:
+      - application/json
+      description: update an existing topik entry by ID
+      parameters:
+      - description: Topic ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated topic data
+        in: body
+        name: topics
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateTopicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Topic'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+      security:
+      - ApiKeyAuth: []
+      summary: Update topik
+      tags:
+      - topik
 securityDefinitions:
   BasicAuth:
     type: basic
