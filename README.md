@@ -60,3 +60,5 @@ go build
 ```bash
 go test ./... -v
 ```
+
+- Test golang app
