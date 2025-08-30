@@ -1,8 +1,22 @@
-// @title ZOGTest API
-// @version 1.0
-// @description This is ZOGTest API server.
-// @host localhost:8000
-// @BasePath /api/v1
+// @title           Swagger Example API
+// @version         1.0
+// @description     This is a sample server celler server.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.basic  BasicAuth
+
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
 package main
 
 import (
@@ -29,7 +43,7 @@ import (
 	//"go.opentelemetry.io/otel/metric"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
-	_ "github.com/swaggo/echo-swagger/example/docs"
+	_ "github.com/edwinjordan/ZOGTest-Golang.git/docs"
 )
 
 func init() {
@@ -66,7 +80,7 @@ func main() {
 	e.Use(middleware.CompressionMiddleware())
 	e.Use(middleware.RateLimitMiddleware(10.0, 20))
 	e.Use(middleware.TimeoutMiddleware(30 * time.Second))
-
+	//e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, domain.Response{
 			Code:    200,
@@ -74,8 +88,7 @@ func main() {
 			Message: "All is well!",
 		})
 	})
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
-
+	e.GET("/swagger/*any", echoSwagger.WrapHandler)
 	//e.Logger.Fatal(e.Start(":8080"))
 	userRepo := postgres.NewUserRepository(dbPool)
 	userService := service.NewUserService(userRepo)

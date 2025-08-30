@@ -36,6 +36,15 @@ func NewNewsHandler(e *echo.Group, svc NewsService) {
 	newsGroup.DELETE("/:id", handler.DeleteNews)
 }
 
+// GetNews godoc
+// @Summary List news
+// @Description Get all news
+// @Tags news
+// @Produce  json
+// @Success 200 {array} domain.News
+// @Failure 500 {object} domain.ResponseSingleData[domain.Empty]
+// @Security ApiKeyAuth
+// @Router /news [get]
 func (h *NewsHandler) GetNewsList(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -182,28 +191,19 @@ func (h *NewsHandler) UpdateNews(c echo.Context) error {
 }
 
 func (h *NewsHandler) DeleteNews(c echo.Context) error {
-	ctx := c.Request().Context()
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		logging.LogWarn(ctx, "Invalid news ID", slog.String("error", err.Error()), slog.String("id", idParam))
 		return c.JSON(http.StatusBadRequest, domain.ResponseSingleData[domain.Empty]{
 			Code:    http.StatusBadRequest,
 			Status:  "error",
-			Message: "Invalid news ID",
+			Message: "Invalid news ID format",
 		})
 	}
 
-	err = h.Service.DeleteNews(ctx, id)
-	if err != nil {
-		logging.LogError(ctx, err, "delete_news", slog.String("id", id.String()))
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return c.JSON(http.StatusNotFound, domain.ResponseSingleData[domain.Empty]{
-				Code:    http.StatusNotFound,
-				Status:  "error",
-				Message: "News not found",
-			})
-		}
+	ctx := c.Request().Context()
+	if err := h.Service.DeleteNews(ctx, id); err != nil {
+		logging.LogError(ctx, err, "delete_news")
 		return c.JSON(http.StatusInternalServerError, domain.ResponseSingleData[domain.Empty]{
 			Code:    http.StatusInternalServerError,
 			Status:  "error",
@@ -211,8 +211,8 @@ func (h *NewsHandler) DeleteNews(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, domain.ResponseSingleData[domain.Empty]{
-		Code:    http.StatusOK,
+	return c.JSON(http.StatusNoContent, domain.ResponseSingleData[domain.Empty]{
+		Code:    http.StatusNoContent,
 		Status:  "success",
 		Message: "News successfully deleted",
 	})

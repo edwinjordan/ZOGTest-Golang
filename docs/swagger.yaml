@@ -1,4 +1,111 @@
+basePath: /api/v1
+definitions:
+  domain.Empty:
+    type: object
+  domain.News:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      slug:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      topics:
+        items:
+          $ref: '#/definitions/domain.NewsTopic'
+        type: array
+      topics_list:
+        items:
+          $ref: '#/definitions/domain.NewsTopicList'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  domain.NewsTopic:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      news_id:
+        type: string
+      topic_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  domain.NewsTopicList:
+    properties:
+      created_at:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  domain.ResponseSingleData-domain_Empty:
+    properties:
+      code:
+        description: number
+        type: integer
+      data:
+        allOf:
+        - $ref: '#/definitions/domain.Empty'
+        description: of data
+      message:
+        description: string
+        type: string
+      status:
+        description: string
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
 info:
-  contact: {}
-paths: {}
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /news:
+    get:
+      description: Get all news
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.News'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ResponseSingleData-domain_Empty'
+      security:
+      - ApiKeyAuth: []
+      summary: List news
+      tags:
+      - news
+securityDefinitions:
+  BasicAuth:
+    type: basic
 swagger: "2.0"
