@@ -10,6 +10,29 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASS: postgres
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+
     steps:
       # 1. Checkout source code
       - name: Checkout repository
@@ -19,7 +42,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.22" # ganti sesuai versi Go kamu
+          go-version: "1.22"
 
       # 3. Cache Go modules
       - name: Cache Go modules
@@ -32,7 +55,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      # 4. Install swag cli (untuk generate swagger.json)
+      # 4. Install swag cli
       - name: Install swag
         run: go install github.com/swaggo/swag/cmd/swag@latest
 
@@ -44,10 +67,31 @@ jobs:
       - name: Go fmt
         run: go fmt ./...
 
-      # 7. Run tests
+      # 7. Wait until postgres ready
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h 127.0.0.1 -p 5432 -U "$DB_USER" -d "$DB_NAME"; then
+              echo "Postgres is ready"
+              break
+            fi
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
+
+      # 8. (Opsional) Apply schema.sql kalau ada
+      - name: Apply schema
+        if: hashFiles('db/schema.sql') != ''
+        run: |
+          PGPASSWORD="$DB_PASS" psql \
+            -h 127.0.0.1 -p 5432 -U "$DB_USER" -d "$DB_NAME" \
+            -v ON_ERROR_STOP=1 \
+            -f db/schema.sql
+
+      # 9. Run tests
       - name: Run tests
         run: go test ./... -v
 
-      # 8. Build binary
+      # 10. Build binary
       - name: Build
         run: go build -o app .
