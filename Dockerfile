@@ -11,24 +11,18 @@ FROM busybox:1.37-glibc as glibc
 # Base image for building the Golang app.
 # -----------------------------------------------------------------------------
 FROM --platform=${PLATFORM} golang:${GO_VERSION}-bookworm AS base_go
-ENV MOON_TOOLCHAIN_FORCE_GLOBALS=1 MOON_INSTALL_DIR="/usr/bin"
-ENV PATH="$MOON_INSTALL_DIR:$PATH" LEFTHOOK=0 CI=true
+ENV MOON_TOOLCHAIN_FORCE_GLOBALS=1 LEFTHOOK=0 CI=true
 WORKDIR /srv
 
-# Install system dependencies and moon cli
-RUN apt-get update && apt-get -yqq --no-install-recommends install curl tini jq ca-certificates git
-RUN apt -yqq purge && update-ca-certificates && apt -yqq autoremove && apt -yqq clean
-RUN curl -fsSL https://moonrepo.dev/install/moon.sh | bash
+# Install system dependencies and Moon CLI (via npm for reliability)
+RUN apt-get update && \
+    apt-get -yqq --no-install-recommends install curl npm tini jq ca-certificates git && \
+    npm install -g @moonrepo/cli && \
+    which moon && moon --version && \
+    apt-get -yqq autoremove && apt-get -yqq clean && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------------------------------------------------------
-# Scaffold the specific project.
-# -----------------------------------------------------------------------------
-FROM base_go AS skeleton
-COPY --link . .
-RUN moon docker scaffold go-app
-
-# -----------------------------------------------------------------------------
-# Install dependencies and build the application.
+# Builder: install deps and build the application.
 # -----------------------------------------------------------------------------
 FROM base_go AS builder
 ENV CGO_ENABLED=1
@@ -37,36 +31,24 @@ ENV CGO_ENABLED=1
 RUN go env -w GOCACHE=/go-cache
 RUN go env -w GOMODCACHE=/gomod-cache
 
-# Copy workspace skeleton
-COPY --from=skeleton /srv/.moon/docker/workspace .
+# Copy project sources (including .moon if you already have it)
+COPY --link . .
 
-# Install toolchain and dependencies
-RUN --mount=type=cache,target=/gomod-cache --mount=type=cache,target=/go-cache moon setup
-
-# Copy source files
-COPY --from=skeleton /srv/.moon/docker/sources .
-
-# Build the application and prune the workspace
-RUN --mount=type=cache,target=/gomod-cache --mount=type=cache,target=/go-cache moon run go-app:tidy
-RUN --mount=type=cache,target=/gomod-cache --mount=type=cache,target=/go-cache moon run go-app:build
-RUN --mount=type=cache,target=/gomod-cache --mount=type=cache,target=/go-cache moon docker prune
+# Build the binary
+RUN go build -o /srv/apps/go-app/build/go-app .
 
 # -----------------------------------------------------------------------------
-# Production image, copy build output files and run the application (runner).
+# Runner: minimal production image
 # -----------------------------------------------------------------------------
 FROM --platform=${PLATFORM} gcr.io/distroless/cc-debian12 AS runner
 
 # ----- Read application environment variables --------------------------------
-
 ARG  DATABASE_URL SMTP_HOST SMTP_PORT SMTP_USERNAME SMTP_PASSWORD SMTP_EMAIL_FROM
 
-# ----- Read application environment variables --------------------------------
-
-# Copy the build output files from the installer stage.
+# Copy the build output files from builder stage
 COPY --from=builder --chown=nonroot:nonroot /srv/apps/go-app/build/go-app /srv/go-app
 
-# Copy some necessary system utilities from previous stage (~7MB).
-# To enhance security, consider avoiding the copying of sysutils.
+# Copy some necessary system utilities
 COPY --from=base_go /usr/bin/tini /usr/bin/tini
 COPY --from=glibc /usr/bin/env /usr/bin/env
 COPY --from=glibc /bin/clear /bin/clear

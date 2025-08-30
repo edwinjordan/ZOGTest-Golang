@@ -118,7 +118,7 @@ func main() {
 	// Get host from environment variable, default to 127.0.0.1 if not set
 	host := os.Getenv("APP_HOST")
 	if host == "" {
-		host = "127.0.0.1"
+		host = "0.0.0.0"
 	}
 
 	// Get port from environment variable, default to 8000 if not set

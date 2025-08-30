@@ -61,4 +61,27 @@ go build
 go test ./... -v
 ```
 
-- Test golang app
+- Run Swagger
+```bash
+http://localhost:8000/swagger/index.html
+```
+- Menggunakan Docker
+```bash
+wsl -d Ubuntu
+
+docker build -t zogtest .
+```
+
+- Untuk menjalankan container
+```bash
+docker run --rm -p 8000:8000 \
+  -e APP_HOST=0.0.0.0 \
+  -e APP_PORT=8000 \
+  -e DATABASE_URL="postgres://postgres:aero1996@host.docker.internal:5432/zogtest-golang" \
+  zogtest
+```
+
+- Untuk menjalankan unit tests
+```bash
+go test ./...
+```
