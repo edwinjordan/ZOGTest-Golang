@@ -25,8 +25,8 @@ CREATE TABLE IF NOT EXISTS news (
 
 CREATE TABLE news_topic (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    topic_id TEXT NOT NULL,
-	news_id TEXT NOT NULL,
+    topic_id UUID NOT NULL,
+	news_id UUID NOT NULL,
 	created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
 	deleted_at TIMESTAMPTZ NULL
