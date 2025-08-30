@@ -35,7 +35,7 @@ type TestKit struct {
 // loadEnv loads environment variables from a .env file located two levels up.
 // It fatals the test if loading fails.
 func loadEnv(t *testing.T) {
-	if err := godotenv.Load("../../.env"); err != nil {
+	if err := godotenv.Load("../../.env.example"); err != nil {
 		t.Fatal("failed to load .env (DATABASE_URL must be set): ", err)
 	}
 }
