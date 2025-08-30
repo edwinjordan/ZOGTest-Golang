@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS topik (
     slug TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMPTZ NOT NULL 
+    deleted_at TIMESTAMPTZ NULL
 );
 
 -- Table: news
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS news (
     status TEXT NOT NULL DEFAULT 'draft',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMPTZ NOT NULL 
+    deleted_at TIMESTAMPTZ NULL 
 );
 
 CREATE TABLE news_topic (
@@ -29,5 +29,5 @@ CREATE TABLE news_topic (
 	news_id TEXT NOT NULL,
 	created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-	deleted_at TIMESTAMPTZ DEFAULT NOW()
+	deleted_at TIMESTAMPTZ NULL
 );
