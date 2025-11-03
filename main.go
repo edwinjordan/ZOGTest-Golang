@@ -77,11 +77,41 @@ func main() {
 
 	defer stop()
 
+	// Get service name from environment
+	serviceName := os.Getenv("SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = "zogtest-golang-api"
+	}
+
+	// Initialize Prometheus-style metrics
 	appMetrics := metrics.NewMetrics()
+
+	// Initialize OpenTelemetry instrumentation
 	shutdown, err := config.ApplyInstrumentation(ctx, e, appMetrics)
+	if err != nil {
+		logging.LogError(ctx, err, "instrumentation_setup")
+		os.Exit(1)
+	}
 	defer shutdown(ctx)
+
+	// Initialize OpenTelemetry metrics
+	otelMetrics, err := metrics.NewOTelMetrics(serviceName)
+	if err != nil {
+		logging.LogError(ctx, err, "otel_metrics_setup")
+		// Continue without OTel metrics
+		slog.Warn("Running without OpenTelemetry metrics")
+	}
+
+	// Apply middleware in order
 	e.Use(middleware.RequestIDMiddleware())
 	e.Use(middleware.SlogLoggerMiddleware())
+
+	// Add OpenTelemetry middleware if metrics are available
+	if otelMetrics != nil {
+		e.Use(middleware.OTelMetricsMiddleware(otelMetrics))
+		e.Use(middleware.EnhancedTracingMiddleware(serviceName))
+	}
+
 	e.Use(middleware.Cors())
 	e.Use(middleware.SecurityHeadersMiddleware())
 	e.Use(middleware.CompressionMiddleware())

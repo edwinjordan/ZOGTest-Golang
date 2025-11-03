@@ -15,9 +15,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
@@ -48,12 +50,40 @@ func ApplyInstrumentation(
 	}
 
 	// Initialize the OpenTelemetry tracer provider.
-	tp, shutdown, err := initTracer(ctx)
+	tp, shutdownTracer, err := initTracer(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize tracer: %w", err)
 	}
 
+	// Initialize the OpenTelemetry metrics provider.
+	mp, shutdownMetrics, err := initOTelMetrics(ctx)
+	if err != nil {
+		shutdownTracer(ctx) // Clean up tracer if metrics fail
+		return nil, fmt.Errorf("failed to initialize OTel metrics: %w", err)
+	}
+
 	e.Use(middleware.AttachTraceProvider(tp))
+
+	// Combined shutdown function
+	shutdown := func(ctx context.Context) error {
+		slog.Info("Shutting down OpenTelemetry instrumentation")
+		var errs []error
+		if err := shutdownMetrics(ctx); err != nil {
+			errs = append(errs, fmt.Errorf("metrics shutdown error: %w", err))
+		}
+		if err := shutdownTracer(ctx); err != nil {
+			errs = append(errs, fmt.Errorf("tracer shutdown error: %w", err))
+		}
+		if len(errs) > 0 {
+			return fmt.Errorf("shutdown errors: %v", errs)
+		}
+		return nil
+	}
+
+	slog.Info("OpenTelemetry initialized successfully",
+		slog.String("tracer_provider", fmt.Sprintf("%T", tp)),
+		slog.String("meter_provider", fmt.Sprintf("%T", mp)))
+
 	return shutdown, nil
 }
 
@@ -153,4 +183,66 @@ func initTracer(ctx context.Context) (*sdktrace.TracerProvider, func(context.Con
 	}
 
 	return tp, shutdown, nil
+}
+
+// initOTelMetrics initializes OpenTelemetry metrics provider with OTLP exporter
+func initOTelMetrics(ctx context.Context) (*metric.MeterProvider, func(context.Context) error, error) {
+	env := os.Getenv("APP_ENVIRONMENT")
+	serviceName := os.Getenv("SERVICE_NAME")
+	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+	if endpoint == "" {
+		endpoint = "localhost:4317"
+	}
+
+	// Create OTLP metric exporter
+	metricExporter, err := otlpmetricgrpc.New(
+		ctx,
+		otlpmetricgrpc.WithEndpoint(endpoint),
+		otlpmetricgrpc.WithInsecure(),
+		otlpmetricgrpc.WithTimeout(5*time.Second),
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create OTLP metric exporter: %w", err)
+	}
+
+	// Create resource
+	res, err := resource.New(
+		ctx,
+		resource.WithAttributes(
+			attribute.String("service.name", serviceName),
+			attribute.String("deployment.environment", env),
+			attribute.String("telemetry.sdk.language", "go"),
+		),
+		resource.WithHost(),
+		resource.WithTelemetrySDK(),
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create OTel resources for metrics: %w", err)
+	}
+
+	// Create meter provider with periodic reader
+	mp := metric.NewMeterProvider(
+		metric.WithResource(res),
+		metric.WithReader(
+			metric.NewPeriodicReader(
+				metricExporter,
+				metric.WithInterval(10*time.Second), // Export metrics every 10 seconds
+			),
+		),
+	)
+
+	// Set global meter provider
+	otel.SetMeterProvider(mp)
+
+	shutdown := func(ctx context.Context) error {
+		slog.Info("Shutting down OpenTelemetry meter provider")
+		return mp.Shutdown(ctx)
+	}
+
+	slog.Info("OpenTelemetry metrics initialized",
+		slog.String("endpoint", endpoint),
+		slog.String("service", serviceName),
+	)
+
+	return mp, shutdown, nil
 }
