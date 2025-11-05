@@ -8,6 +8,11 @@
 *.so
 *.dylib
 
+# Build output
+ZOGTest-Golang.git
+ZOGTest-Golang
+zogtest
+
 # Test binary, built with `go test -c`
 *.test
 
