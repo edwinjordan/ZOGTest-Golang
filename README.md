@@ -7,6 +7,7 @@
 - [godotenv](github.com/joho/godotenv) for create .ENV
 - [Echo](github.com/labstack/echo/v4) for Routing
 - [Testify](github.com/stretchr/testify) for Testing
+- [Firebase Admin SDK](firebase.google.com/go/v4) for Push Notifications
 
 ## How To Setup on Local Environment
 - Git clone this repository to your local environment
@@ -85,3 +86,15 @@ docker run --rm -p 8000:8000 \
 ```bash
 go test ./...
 ```
+
+## Firebase Integration
+
+This application includes Firebase Cloud Messaging (FCM) for push notifications. See [FIREBASE.md](FIREBASE.md) for detailed setup instructions.
+
+**Quick Setup:**
+1. Download Firebase service account credentials from Firebase Console
+2. Save as `firebase-credentials.json` in project root
+3. Add `FIREBASE_CREDENTIALS_PATH=./firebase-credentials.json` to `.env`
+4. Restart the application
+
+Firebase endpoints will be available at `/api/v1/notifications/*` if configured.
