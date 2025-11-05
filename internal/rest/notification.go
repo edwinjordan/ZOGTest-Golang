@@ -121,7 +121,7 @@ func (h *NotificationHandler) SendMulticastNotification(c echo.Context) error {
 
 	var errors []string
 	for _, resp := range response.Responses {
-		if !resp.Success {
+		if !resp.Success && resp.Error != nil {
 			errors = append(errors, resp.Error.Error())
 		}
 	}

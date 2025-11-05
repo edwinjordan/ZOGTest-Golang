@@ -100,7 +100,8 @@ func TestSendNotificationValidation(t *testing.T) {
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 			
 			var response domain.Response
-			json.Unmarshal(rec.Body.Bytes(), &response)
+			err := json.Unmarshal(rec.Body.Bytes(), &response)
+			assert.NoError(t, err)
 			
 			if tt.expectedError {
 				assert.Equal(t, "Error", response.Status)
@@ -162,7 +163,8 @@ func TestMulticastNotificationValidation(t *testing.T) {
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 			
 			var response domain.Response
-			json.Unmarshal(rec.Body.Bytes(), &response)
+			err := json.Unmarshal(rec.Body.Bytes(), &response)
+			assert.NoError(t, err)
 			
 			if tt.expectedError {
 				assert.Equal(t, "Error", response.Status)
@@ -224,7 +226,8 @@ func TestTopicNotificationValidation(t *testing.T) {
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 			
 			var response domain.Response
-			json.Unmarshal(rec.Body.Bytes(), &response)
+			err := json.Unmarshal(rec.Body.Bytes(), &response)
+			assert.NoError(t, err)
 			
 			if tt.expectedError {
 				assert.Equal(t, "Error", response.Status)
