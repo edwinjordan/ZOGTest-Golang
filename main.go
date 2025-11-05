@@ -33,6 +33,7 @@ import (
 	"github.com/edwinjordan/ZOGTest-Golang.git/config"
 	"github.com/edwinjordan/ZOGTest-Golang.git/database"
 	"github.com/edwinjordan/ZOGTest-Golang.git/domain"
+	"github.com/edwinjordan/ZOGTest-Golang.git/internal/firebase"
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/logging"
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/metrics"
 	"github.com/edwinjordan/ZOGTest-Golang.git/internal/repository/postgres"
@@ -136,14 +137,28 @@ func main() {
 
 	newsRepo := postgres.NewNewsRepository(dbPool)
 	newsService := service.NewNewsService(newsRepo)
+
+	// Initialize Firebase service (optional - will skip if credentials not provided)
+	firebaseService, err := firebase.NewFirebaseService(ctx)
+	if err != nil {
+		slog.Warn("Firebase service not initialized", slog.String("reason", err.Error()))
+	}
+
 	apiV1 := e.Group("/api/v1")
 	usersGroup := apiV1.Group("")
 	topicGroup := apiV1.Group("")
 	newsGroup := apiV1.Group("")
+	notificationGroup := apiV1.Group("")
 
 	rest.NewUserHandler(usersGroup, userService)
 	rest.NewTopicHandler(topicGroup, topicService)
 	rest.NewNewsHandler(newsGroup, newsService)
+
+	// Register notification handler only if Firebase is initialized
+	if firebaseService != nil {
+		rest.NewNotificationHandler(notificationGroup, firebaseService)
+		slog.Info("Firebase notification endpoints registered")
+	}
 
 	// Get host from environment variable, default to 127.0.0.1 if not set
 	host := os.Getenv("APP_HOST")
